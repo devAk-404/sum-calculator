@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Decimal Number Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 4px;
+      word-wrap: break-word;
+      font-family: monospace;
+      font-size: 1.1rem;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Decimal Number Sum Calculator</h2>
+
+  <label for="num1">Input Number 1:</label>
+  <input
+    type="text"
+    pattern="^\d*\.?\d*$"
+    inputmode="decimal"
+    id="num1"
+    placeholder="Enter first non-negative decimal"
+  />
+
+  <label for="num2">Input Number 2:</label>
+  <input
+    type="text"
+    pattern="^\d*\.?\d*$"
+    inputmode="decimal"
+    id="num2"
+    placeholder="Enter second non-negative decimal"
+  />
+
+  <button id="calculateBtn">Calculate Sum</button>
+
+  <div id="result"></div>
+
+  <script>
+    const num1Input = document.getElementById('num1');
+    const num2Input = document.getElementById('num2');
+
+    num1Input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+    });
+
+    num2Input.addEventListener('input', function() {
+      this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+    });
+
+    function addLargeDecimals(num1Str, num2Str) {
+      // Normalize decimal places by padding with zeros
+      const [int1, dec1 = ''] = num1Str.split('.');
+      const [int2, dec2 = ''] = num2Str.split('.');
+      const maxDecLength = Math.max(dec1.length, dec2.length);
+      const paddedDec1 = dec1.padEnd(maxDecLength, '0');
+      const paddedDec2 = dec2.padEnd(maxDecLength, '0');
+
+      const n1 = (int1 + paddedDec1).split('').reverse().map(Number);
+      const n2 = (int2 + paddedDec2).split('').reverse().map(Number);
+      const sumDigits = [];
+      let carry = 0;
+
+      const maxLength = Math.max(n1.length, n2.length);
+      for (let i = 0; i < maxLength; i++) {
+        const digit1 = n1[i] || 0;
+        const digit2 = n2[i] || 0;
+        const currentSum = digit1 + digit2 + carry;
+        sumDigits.push(currentSum % 10);
+        carry = Math.floor(currentSum / 10);
+      }
+
+      if (carry) {
+        sumDigits.push(carry);
+      }
+
+      let sumStr = sumDigits.reverse().join('');
+      const decimalIndexFromEnd = maxDecLength;
+      if (decimalIndexFromEnd > 0) {
+        sumStr = sumStr.slice(0, -decimalIndexFromEnd) + '.' + sumStr.slice(-decimalIndexFromEnd);
+        // Remove leading/trailing zeros after the decimal point (optional)
+        sumStr = sumStr.replace(/^0+(\d)/, '$1').replace(/(\.\d*?)0+$/, '$1');
+        if (sumStr.endsWith('.')) {
+          sumStr = sumStr.slice(0, -1);
+        }
+      } else {
+        sumStr = sumStr.replace(/^0+(\d)/, '$1') || '0';
+      }
+
+      return sumStr;
+    }
+
+    document.getElementById('calculateBtn').addEventListener('click', () => {
+      const num1 = num1Input.value.trim();
+      const num2 = num2Input.value.trim();
+      const resultDiv = document.getElementById('result');
+
+      const decimalRegex = /^\d*\.?\d*$/;
+      if (!decimalRegex.test(num1) || !decimalRegex.test(num2)) {
+        resultDiv.textContent = "Please enter valid non-negative decimal numbers only.";
+        resultDiv.style.color = 'red';
+        return;
+      }
+
+      const sum = addLargeDecimals(num1, num2);
+      resultDiv.style.color = 'black';
+      resultDiv.textContent = `Sum of Numbers:\n${sum}`;
+    });
+  </script>
+
+</body>
+</html>
